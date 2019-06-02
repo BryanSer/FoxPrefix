@@ -1,0 +1,4 @@
+name: FoxPrefix
+version: ${project.version}
+main: br.foxprefix.Main
+authors: [Bryan_lzh]

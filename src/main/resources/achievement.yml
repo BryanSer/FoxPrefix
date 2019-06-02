@@ -1,0 +1,16 @@
+#统计名(用在隔壁配置的)
+quest_1:
+    #统计类型
+    #Kill: 击杀生物统计
+    #Dig:  挖掘方块统计
+    #Place: 放置方块统计
+    #Smelt: 烧制物品统计
+    #Fish: 钓鱼统计
+    #Online: 在线统计(每分钟+1)
+    Type: Kill
+    #统计参数(怪物ID 方块ID 物品ID之类的)
+    #ID可以在
+    #https://minecraft-zh.gamepedia.com/Java%E7%89%88%E6%95%B0%E6%8D%AE%E5%80%BC/%E6%89%81%E5%B9%B3%E5%8C%96%E5%89%8D
+    #这里查看 (注意 需要十进制的内部值)
+    ID: 54
+    

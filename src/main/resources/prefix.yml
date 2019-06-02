@@ -1,0 +1,44 @@
+#称号内部名(用于命令和储存 只能英文)
+example1:
+    #显示在聊天上的样式
+    Display: '&7[样例称号1]&r'
+    #在UI中的设定
+    UI:
+        #在UI中的位置 例如: 第一页第一行第一个的Index为0
+        #第一页第二行第一个的Index为9
+        #第二页第一行第一个的Index为45
+        Index: 0
+        #显示在UI里的物品 锁定时
+        ItemLock: '388 1 0 Name:&7[样例称号1]&r Lore:&a点击装备|&a已锁定'
+        #显示在UI里的物品 解锁时
+        ItemUnlock: '388 1 0 Name:&7[样例称号1]&r Lore:&a点击装备|&a已解锁'
+    Unlock:
+        #解锁的方式:
+        #Money: 通过金钱购买
+        #Command: 只能通过命令解锁
+        #Variable: 变量达成表达式
+        Type: Money
+        #上面类型息息相关的值
+        #如果锁Money  填写数字表示价格
+        #Command: 不需要填写任何东西
+        #Variable: 填写表达式
+        Value: 100
+        
+
+#称号内部名(用于命令和储存 只能英文)
+example2:
+    #显示在聊天上的样式
+    Display: '&7[样例称号2]&r'
+        UI:
+            #在UI中的位置 例如: 第一页第一行第一个的Index为0
+            #第一页第二行第一个的Index为9
+            #第二页第一行第一个的Index为45
+            Index: 1
+            #显示在UI里的物品 锁定时
+            ItemLock: '388 1 0 Name:&7[样例称号1]&r Lore:&a点击装备|&a已锁定'
+            #显示在UI里的物品 解锁时
+            ItemUnlock: '388 1 0 Name:&7[样例称号1]&r Lore:&a点击装备|&a已解锁'
+    Unlock:
+        Type: Variable
+        #表达式中, %xxx%表示本插件的统计变量
+        Value: '%quest_1% > 100'

@@ -151,7 +151,10 @@ class VariableUnlock(value: String) : Unlock(value, UnlockType.VARIABLE) {
             }
         """.trimIndent()
         Logger.getLogger(VariableUnlock::class.java.name).log(Level.SEVERE, "自动化脚本: $scrr")
-        script = ScriptLoader.eval(Main.getPlugin(), scrr)
+        val t = jdk.nashorn.api.scripting.NashornScriptEngineFactory()
+        script = t.getScriptEngine() as NashornScriptEngine
+        script.eval(scrr)
+        //ScriptLoader.eval(Main.getPlugin(), scrr)
     }
 
     override fun isUnlock(p: Player): Boolean {

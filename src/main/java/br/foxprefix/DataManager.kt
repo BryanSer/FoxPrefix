@@ -160,7 +160,7 @@ object DataManager : Listener {
 
         val conn = +pool
         val sta = conn.createStatement()
-        sta.execute("CREATE TABLE IF NOT EXISTS FoxPrefix(name VARCHAR(255) NOT NULL PRIMARY KEY, playerdata BLOB NOT NULL) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4")
+        sta.execute("CREATE TABLE IF NOT EXISTS FoxPrefix(name VARCHAR(80) NOT NULL PRIMARY KEY, playerdata BLOB NOT NULL) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4")
         sta.close()
         pool - conn
     }

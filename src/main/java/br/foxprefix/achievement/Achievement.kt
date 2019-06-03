@@ -30,9 +30,14 @@ abstract class Achievement(config: ConfigurationSection) : Listener {
     }
 
     fun add(p: Player, value: Int = 1) {
-        val pd = DataManager get p.name
+        val pd = DataManager get p.name  ?: return
         val i = (pd.achievementData[name] ?: 0) + value
         pd.achievementData[name] = i
+    }
+
+    fun getValue(p:Player):Int{
+        val pd = DataManager get p.name ?: return 0
+        return (pd.achievementData[name] ?: 0)
     }
 }
 

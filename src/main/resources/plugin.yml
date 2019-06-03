@@ -2,3 +2,11 @@ name: FoxPrefix
 version: ${project.version}
 main: br.foxprefix.Main
 authors: [Bryan_lzh]
+depend: [BrAPI]
+
+commands:
+    FoxPrefix:
+        aliases: [fp]
+        description: 主命令
+        usage: |
+            §6/<command> >> 打开UI

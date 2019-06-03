@@ -167,6 +167,12 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/PlaceholderAPI.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.6</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <repositories>

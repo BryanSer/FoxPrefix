@@ -3,6 +3,7 @@ package br.foxprefix.achievement
 import br.foxprefix.Main
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.entity.Player
 import java.io.File
 
 val Achievements = mutableMapOf<String, Achievement>()
@@ -24,6 +25,12 @@ enum class AchievementType(val clasz: Class<out Achievement>) {
         list += a
         return a
     }
+}
+
+fun getAchievementValue(str:String,p: Player):Int{
+    val str = str.replace("%", "")
+    val a = Achievements[str] ?: return 0
+    return a.getValue(p)
 }
 
 fun loadAchievement() {

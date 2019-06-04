@@ -27,8 +27,18 @@ enum class AchievementType(val clasz: Class<out Achievement>) {
     }
 }
 
-fun getAchievementValue(str:String,p: Player):Int{
-    val str = str.replace("%", "")
+fun getAchievementValue(str: String, p: Player): Int {
+    if(DEBUG){
+        p.sendMessage("§6正在读取变量$str")
+    }
+    val str = str.replace("%", "").replace(" ","_")
+    if(DEBUG){
+        if(Achievements[str] == null){
+            p.sendMessage("§c找不到 $str")
+        }else {
+            p.sendMessage("§6数据值为: ${Achievements[str]!!.getValue(p)}")
+        }
+    }
     val a = Achievements[str] ?: return 0
     return a.getValue(p)
 }
@@ -36,12 +46,12 @@ fun getAchievementValue(str:String,p: Player):Int{
 fun loadAchievement() {
     Achievements.clear()
     AchievementType.values().forEach { it.list.clear() }
-    val f = File(Main.getPlugin().dataFolder,"achievement.yml")
-    if(!f.exists()){
-        Main.getPlugin().saveResource("achievement.yml",false)
+    val f = File(Main.getPlugin().dataFolder, "achievement.yml")
+    if (!f.exists()) {
+        Main.getPlugin().saveResource("achievement.yml", false)
     }
     val config = YamlConfiguration.loadConfiguration(f)
-    for(key in config.getKeys(false)){
+    for (key in config.getKeys(false)) {
         val cs = config.getConfigurationSection(key)
         readAchievement(cs)
     }

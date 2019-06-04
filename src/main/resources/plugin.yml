@@ -10,3 +10,5 @@ commands:
         description: 主命令
         usage: |
             §6/<command> >> 打开UI
+            §6/<command> unlock [玩家] [称号] >> 给玩家解锁称号(强制解锁)
+            §6/<command> reload >> 重载插件

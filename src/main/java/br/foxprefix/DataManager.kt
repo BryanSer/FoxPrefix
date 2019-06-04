@@ -6,6 +6,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.AsyncPlayerChatEvent
@@ -18,6 +19,9 @@ object DataManager : Listener {
     val cacheData: MutableMap<String, PlayerData> = HashMap()
     lateinit var pool: HikariDataSource
     infix fun get(name: String): PlayerData? = cacheData[name]
+    infix fun save(p: Player){
+        saveData(p.name, false)
+    }
     operator fun HikariDataSource.unaryPlus(): Connection = this.connection
     operator fun HikariDataSource.minus(conn: Connection): Unit = this.evictConnection(conn)
     operator fun Connection.unaryMinus() = pool - this

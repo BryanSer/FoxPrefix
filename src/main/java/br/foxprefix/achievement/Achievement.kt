@@ -16,26 +16,28 @@ import org.bukkit.event.inventory.FurnaceSmeltEvent
 import org.bukkit.event.player.PlayerFishEvent
 
 
-
 abstract class Achievement(config: ConfigurationSection) : Listener {
     lateinit var type: AchievementType
     val name: String
 
-    init {
-        name = config.name
-    }
 
     init {
+        name = config.name
         Bukkit.getPluginManager().registerEvents(this, Main.getPlugin())
     }
 
     fun add(p: Player, value: Int = 1) {
-        val pd = DataManager get p.name  ?: return
+        val pd = DataManager get p.name //?: return
+        if (pd == null) {
+            if (DEBUG) p.sendMessage("§c暂时无法获取玩家数据")
+            return
+        }
         val i = (pd.achievementData[name] ?: 0) + value
         pd.achievementData[name] = i
+        if (DEBUG) p.sendMessage("§6追加成功")
     }
 
-    fun getValue(p:Player):Int{
+    fun getValue(p: Player): Int {
         val pd = DataManager get p.name ?: return 0
         return (pd.achievementData[name] ?: 0)
     }
@@ -56,7 +58,7 @@ class OnlineAchievement(config: ConfigurationSection) : Achievement(config), Run
     }
 
     init {
-        Bukkit.getScheduler().runTaskTimer(Main.getPlugin(), this, 1200L,1200L)
+        Bukkit.getScheduler().runTaskTimer(Main.getPlugin(), this, 1200L, 1200L)
     }
 }
 
@@ -103,6 +105,8 @@ class PlaceAchievement(config: ConfigurationSection) : Achievement(config) {
     }
 }
 
+val DEBUG = false
+
 class DigAchievement(config: ConfigurationSection) : Achievement(config) {
     private val id: Int
 
@@ -113,7 +117,13 @@ class DigAchievement(config: ConfigurationSection) : Achievement(config) {
 
     @EventHandler
     fun onDig(evt: BlockBreakEvent) {
+        if (DEBUG) {
+            evt.player.sendMessage("§6监听到挖掘  被挖掘方块ID: ${evt.block.typeId}  成就要求ID: $id")
+        }
         if (evt.block.typeId == id) {
+            if (DEBUG) {
+                evt.player.sendMessage("§6尝试增加成就值")
+            }
             add(evt.player)
         }
     }

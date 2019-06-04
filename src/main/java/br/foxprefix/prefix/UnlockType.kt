@@ -9,9 +9,12 @@ import Br.API.Scripts.ScriptLoader
 import Br.API.Utils
 import Br.API.ktsuger.ItemBuilder
 import Br.API.ktsuger.msg
+import Br.API.ktsuger.plusAssign
+import Br.API.ktsuger.unaryPlus
 import br.foxprefix.DataManager
 import br.foxprefix.Main
 import br.foxprefix.PlayerData
+import br.foxprefix.achievement.DEBUG
 import br.foxprefix.achievement.getAchievementValue
 import jdk.nashorn.api.scripting.NashornScriptEngine
 import org.bukkit.Material
@@ -19,6 +22,7 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -33,6 +37,8 @@ enum class UnlockType(val clasz: Class<out Unlock>) {
 val PrefixIndex = mutableMapOf<Int, Prefix>()
 val Prefixs = mutableMapOf<String, Prefix>()
 fun loadPrefixs() {
+    Prefixs.clear()
+    PrefixIndex.clear()
     val f = File(Main.getPlugin().dataFolder, "prefix.yml")
     if (!f.exists()) {
         Main.getPlugin().saveResource("prefix.yml", false)
@@ -46,11 +52,40 @@ fun loadPrefixs() {
     }
 }
 
+fun replaceVar(item: ItemStack, p: Player): ItemStack {
+    val item = item.clone()
+    val im = +item
+    val lore = im.lore
+    if (lore != null) {
+        for (i in 0 until lore.size) {
+            var s = lore[i]
+            val matcher = compile.matcher(s)
+            val finded = HashSet<String>()
+            while (matcher.find()) {
+                val pattern = matcher.group("pattern")
+                val name = matcher.group("name")
+                if (finded.contains(name)) {
+                    continue
+                }
+                finded += name
+                s = s.replace(pattern, getAchievementValue(pattern, p).toString())
+            }
+            lore[i] = s
+        }
+        im.lore = lore
+        item += im
+    }
+    return item
+}
+
 fun registerUI() {
-    val ui = KtUIBuilder.createUI("FPUI", "§6称号", 6, false) * { p, map ->
+    val ui = KtUIBuilder.createUI("FPUI", "§3§l楼楼称号商店", 6, false) * { p, map ->
         val pd = DataManager get p.name
         map["Data"] = pd
         map["Page"] = 0
+    }
+    ui onClose { p, s ->
+        DataManager save p
     }
     for (i in 0..44) {
         val index = i
@@ -63,12 +98,12 @@ fun registerUI() {
                 if (pd.equip == prefix.name) {
                     val item = prefix.ui_unlock.clone()
                     item.addUnsafeEnchantment(Enchantment.DIG_SPEED, 1)
-                    return@d item
+                    return@d replaceVar(item, p)
                 } else {
-                    return@d prefix.ui_unlock
+                    return@d replaceVar(prefix.ui_unlock, p)
                 }
             } else {
-                return@d prefix.ui_lock
+                return@d replaceVar(prefix.ui_lock, p)
             }
         } click c@{ p, s ->
             val page = s["Page"] as Int
@@ -99,8 +134,19 @@ fun registerUI() {
             s["Page"] = page - 1
         }
     }
-    ui + 53 += KtItem.newItem() display (ItemBuilder.create(Material.ARROW) name "§6下一页")() click {p,s->
+    val nextp = (ItemBuilder.create(Material.ARROW) name "§6下一页")()
+    ui + 53 += KtItem.newItem() display { p, s ->
         val page = s["Page"] as Int
+        if (page < 5) {
+            nextp
+        } else {
+            null
+        }
+    } click c@{ p, s ->
+        val page = s["Page"] as Int
+        if (page >= 5) {
+            return@c
+        }
         s["Page"] = page + 1
     }
     UIManager.RegisterUI(ui.build())
@@ -144,12 +190,11 @@ class VariableUnlock(value: String) : Unlock(value, UnlockType.VARIABLE) {
             }
             args += v
         }
-        val scrr =
-                """
+        val scrr = """
             function checkUnlock($args){
                 return $scr;
             }
-        """.trimIndent()
+            """.trimIndent()
         Logger.getLogger(VariableUnlock::class.java.name).log(Level.SEVERE, "自动化脚本: $scrr")
         val t = jdk.nashorn.api.scripting.NashornScriptEngineFactory()
         script = t.getScriptEngine() as NashornScriptEngine
@@ -162,7 +207,10 @@ class VariableUnlock(value: String) : Unlock(value, UnlockType.VARIABLE) {
         for ((par, _) in vars) {
             vari += getAchievementValue(par, p)
         }
-        return script.invokeFunction("checkUnlock", vari.toIntArray()) as? Boolean ?: false
+        if (DEBUG) {
+            p.sendMessage("§b解锁成就 脚本参数列表: $vari")
+        }
+        return script.invokeFunction("checkUnlock", *vari.toTypedArray()) as Boolean
     }
 
 }

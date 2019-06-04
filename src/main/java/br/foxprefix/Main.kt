@@ -37,6 +37,26 @@ open class Main : JavaPlugin() {
         if (args.isEmpty() || args[0].equals("help", false)) {
             return false
         }
+        if (!sender.isOp) {
+            return true
+        }
+        if (args[0].equals("delach", true) && args.size >= 3) {
+
+            val p = Bukkit.getPlayerExact(args[1])
+            if (p == null || !p.isOnline) {
+                sender.sendMessage("§c找不到玩家或玩家不在线")
+                return true
+            }
+            val pd = DataManager get p.name
+            if (pd != null) {
+                pd.achievementData[args[2]] = 0
+                sender.sendMessage("§6处理完成")
+                DataManager save p
+            } else {
+                sender.sendMessage("§c处理失败 数据错误")
+            }
+            return true
+        }
         if (args[0].equals("reload", true)) {
             loadAchievement()
             loadPrefixs()

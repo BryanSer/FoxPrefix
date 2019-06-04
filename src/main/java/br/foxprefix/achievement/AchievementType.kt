@@ -4,6 +4,7 @@ import br.foxprefix.Main
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
+import org.bukkit.event.HandlerList
 import java.io.File
 
 val Achievements = mutableMapOf<String, Achievement>()
@@ -14,7 +15,8 @@ enum class AchievementType(val clasz: Class<out Achievement>) {
     PLACE(PlaceAchievement::class.java),
     SMELT(SmeltAchievement::class.java),
     FISH(FishAchievement::class.java),
-    ONLINE(OnlineAchievement::class.java);
+    ONLINE(OnlineAchievement::class.java),
+    KillPlayer(KillPlayerAchievement::class.java);
 
     val list = mutableListOf<Achievement>()
 
@@ -28,14 +30,14 @@ enum class AchievementType(val clasz: Class<out Achievement>) {
 }
 
 fun getAchievementValue(str: String, p: Player): Int {
-    if(DEBUG){
+    if (DEBUG) {
         p.sendMessage("§6正在读取变量$str")
     }
-    val str = str.replace("%", "").replace(" ","_")
-    if(DEBUG){
-        if(Achievements[str] == null){
+    val str = str.replace("%", "").replace(" ", "_")
+    if (DEBUG) {
+        if (Achievements[str] == null) {
             p.sendMessage("§c找不到 $str")
-        }else {
+        } else {
             p.sendMessage("§6数据值为: ${Achievements[str]!!.getValue(p)}")
         }
     }
@@ -44,6 +46,9 @@ fun getAchievementValue(str: String, p: Player): Int {
 }
 
 fun loadAchievement() {
+    Achievements.forEach {
+        HandlerList.unregisterAll(it.value)
+    }
     Achievements.clear()
     AchievementType.values().forEach { it.list.clear() }
     val f = File(Main.getPlugin().dataFolder, "achievement.yml")

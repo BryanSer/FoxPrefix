@@ -4,7 +4,6 @@ import Br.API.GUI.Ex.UIManager
 import br.foxprefix.achievement.loadAchievement
 import br.foxprefix.prefix.Prefixs
 import br.foxprefix.prefix.loadPrefixs
-import br.foxprefix.prefix.registerUI
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -20,6 +19,7 @@ open class Main : JavaPlugin() {
         loadAchievement()
         loadPrefixs()
         registerUI()
+        RankManager.init()
     }
 
     override fun onDisable() {

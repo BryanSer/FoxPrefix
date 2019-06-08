@@ -4,6 +4,7 @@ import Br.API.Utils
 import br.foxprefix.DataManager
 import br.foxprefix.Main
 import org.bukkit.Bukkit
+import org.bukkit.Statistic
 import org.bukkit.block.Block
 import org.bukkit.block.Furnace
 import org.bukkit.configuration.ConfigurationSection
@@ -17,6 +18,7 @@ import org.bukkit.event.entity.EntityDeathEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.inventory.FurnaceSmeltEvent
 import org.bukkit.event.player.PlayerFishEvent
+import org.bukkit.event.player.PlayerStatisticIncrementEvent
 import org.bukkit.inventory.ItemStack
 
 
@@ -48,7 +50,8 @@ abstract class Achievement(config: ConfigurationSection) : Listener {
 class FishAchievement(config: ConfigurationSection) : Achievement(config) {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onFish(evt: PlayerFishEvent) {
-        add(evt.player)
+        if(evt.state == PlayerFishEvent.State.CAUGHT_FISH)
+            add(evt.player)
     }
 }
 
@@ -165,7 +168,7 @@ class KillAchievement(config: ConfigurationSection) : Achievement(config) {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onEntityDeath(evt: EntityDeathEvent) {
-        if (evt.entity.killer != null && id.contains(evt.entity.type.typeId) ) {
+        if (evt.entity.killer != null && id.contains(evt.entity.type.typeId)) {
             add(evt.entity.killer)
         }
     }

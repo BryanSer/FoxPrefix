@@ -1,26 +1,17 @@
 package br.foxprefix.prefix
 
-import Br.API.GUI.Ex.UIManager
-import Br.API.GUI.Ex.kt.KtItem
-import Br.API.GUI.Ex.kt.KtUIBuilder
-import Br.API.GUI.Ex.kt.get
-import Br.API.GUI.Ex.kt.set
-import Br.API.Scripts.ScriptLoader
 import Br.API.Utils
-import Br.API.ktsuger.ItemBuilder
 import Br.API.ktsuger.msg
 import Br.API.ktsuger.plusAssign
 import Br.API.ktsuger.unaryPlus
-import br.foxprefix.DataManager
+import br.foxprefix.AchieveData
 import br.foxprefix.Main
-import br.foxprefix.PlayerData
+import br.foxprefix.RankManager
 import br.foxprefix.achievement.DEBUG
 import br.foxprefix.achievement.getAchievementValue
 import jdk.nashorn.api.scripting.NashornScriptEngine
-import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import java.io.File
@@ -52,6 +43,7 @@ fun loadPrefixs() {
     }
 }
 
+val rankPattern = Pattern.compile("(?<pattern>\\\$(?<name>[^\$]*)\\\$)")
 fun replaceVar(item: ItemStack, p: Player): ItemStack {
     val item = item.clone()
     val im = +item
@@ -70,86 +62,23 @@ fun replaceVar(item: ItemStack, p: Player): ItemStack {
                 finded += name
                 s = s.replace(pattern, getAchievementValue(pattern, p).toString())
             }
+            finded.clear()
+            val mat = rankPattern.matcher(s)
+            while (mat.find()) {
+                val pattern = mat.group("pattern")
+                val name = mat.group("name")
+                if (finded.contains(name)) {
+                    continue
+                }
+                finded += name
+                s = s.replace(pattern, RankManager.readRank(pattern))
+            }
             lore[i] = s
         }
         im.lore = lore
         item += im
     }
     return item
-}
-
-fun registerUI() {
-    val ui = KtUIBuilder.createUI("FPUI", "§3§l楼楼称号商店", 6, false) * { p, map ->
-        val pd = DataManager get p.name
-        map["Data"] = pd
-        map["Page"] = 0
-    }
-    ui onClose { p, s ->
-        DataManager save p
-    }
-    for (i in 0..44) {
-        val index = i
-        ui + index += KtItem.newItem() display d@{ p, s ->
-            val page = s["Page"] as Int
-            val ind = page * 45 + index
-            val prefix = PrefixIndex[ind] ?: return@d null
-            val pd = s["Data"] as PlayerData
-            if (pd.isUnlocked(prefix)) {
-                if (pd.equip == prefix.name) {
-                    val item = prefix.ui_unlock.clone()
-                    item.addUnsafeEnchantment(Enchantment.DIG_SPEED, 1)
-                    return@d replaceVar(item, p)
-                } else {
-                    return@d replaceVar(prefix.ui_unlock, p)
-                }
-            } else {
-                return@d replaceVar(prefix.ui_lock, p)
-            }
-        } click c@{ p, s ->
-            val page = s["Page"] as Int
-            val ind = page * 45 + index
-            val prefix = PrefixIndex[ind] ?: return@c
-            val pd = s["Data"] as PlayerData
-            if (pd.isUnlocked(prefix)) {
-                pd.equip = prefix.name
-            } else {
-                if (prefix.unlock_value.isUnlock(p)) {
-                    p msg "§6你成功的解锁了这个称号"
-                    pd.unlockPrefix.add(prefix.name)
-                    pd.equip = prefix.name
-                } else {
-                    p msg "§c你无法解锁这个称号"
-                }
-            }
-        }
-    }
-
-    val prepage = (ItemBuilder.create(Material.ARROW) name "§6上一页")()
-    ui + 45 += KtItem.newItem() display { p, s ->
-        val page = s["Page"] as Int
-        if (page > 0) prepage else null
-    } click { p, s ->
-        val page = s["Page"] as Int
-        if (page > 0) {
-            s["Page"] = page - 1
-        }
-    }
-    val nextp = (ItemBuilder.create(Material.ARROW) name "§6下一页")()
-    ui + 53 += KtItem.newItem() display { p, s ->
-        val page = s["Page"] as Int
-        if (page < 5) {
-            nextp
-        } else {
-            null
-        }
-    } click c@{ p, s ->
-        val page = s["Page"] as Int
-        if (page >= 5) {
-            return@c
-        }
-        s["Page"] = page + 1
-    }
-    UIManager.RegisterUI(ui.build())
 }
 
 fun readUnlock(config: ConfigurationSection): Unlock {
@@ -167,6 +96,7 @@ val compile = Pattern.compile("(?<pattern>%(?<name>[^%]*)%)")
 
 class VariableUnlock(value: String) : Unlock(value, UnlockType.VARIABLE) {
     val script: NashornScriptEngine
+    val asyncScript: NashornScriptEngine
 
     val vars = mutableMapOf<String, String>()
 
@@ -199,6 +129,8 @@ class VariableUnlock(value: String) : Unlock(value, UnlockType.VARIABLE) {
         val t = jdk.nashorn.api.scripting.NashornScriptEngineFactory()
         script = t.getScriptEngine() as NashornScriptEngine
         script.eval(scrr)
+        asyncScript = t.getScriptEngine() as NashornScriptEngine
+        asyncScript.eval(scrr)
         //ScriptLoader.eval(Main.getPlugin(), scrr)
     }
 
@@ -213,6 +145,14 @@ class VariableUnlock(value: String) : Unlock(value, UnlockType.VARIABLE) {
         return script.invokeFunction("checkUnlock", *vari.toTypedArray()) as Boolean
     }
 
+    fun isUnlock_Async(p: AchieveData): Boolean {
+        val vari = mutableListOf<Int>()
+        for ((par, _) in vars) {
+            var key = par.replace("%", "").replace(" ", "_")
+            vari += p.data[key] ?: 0
+        }
+        return asyncScript.invokeFunction("checkUnlock", *vari.toTypedArray()) as Boolean
+    }
 }
 
 class CommandUnlock(value: String?) : Unlock("", UnlockType.COMMAND) {

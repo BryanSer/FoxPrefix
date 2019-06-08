@@ -15,6 +15,9 @@ import org.bukkit.event.player.PlayerQuitEvent
 import java.io.*
 import java.sql.Connection
 
+operator fun HikariDataSource.unaryPlus(): Connection = this.connection
+operator fun HikariDataSource.minus(conn: Connection): Unit = this.evictConnection(conn)
+operator fun Connection.unaryMinus() = DataManager.pool - this
 object DataManager : Listener {
     val cacheData: MutableMap<String, PlayerData> = HashMap()
     lateinit var pool: HikariDataSource
@@ -22,9 +25,6 @@ object DataManager : Listener {
     infix fun save(p: Player){
         saveData(p.name, false)
     }
-    operator fun HikariDataSource.unaryPlus(): Connection = this.connection
-    operator fun HikariDataSource.minus(conn: Connection): Unit = this.evictConnection(conn)
-    operator fun Connection.unaryMinus() = pool - this
 
 
     @EventHandler
@@ -121,8 +121,9 @@ object DataManager : Listener {
             val rs = ps.executeQuery()
             if (rs.next()) {
                 val bytes = rs.getBytes("playerdata")
+                val data = PlayerData.deserialize(bytes)
                 Bukkit.getScheduler().runTask(Main.getPlugin()) {
-                    callback(PlayerData.deserialize(bytes))
+                    callback(data)
                 }
             } else {
                 Bukkit.getScheduler().runTask(Main.getPlugin()) {

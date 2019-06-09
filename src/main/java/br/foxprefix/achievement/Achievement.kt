@@ -154,7 +154,7 @@ class KillPlayerAchievement(config: ConfigurationSection) : Achievement(config) 
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onEntityDeath(evt: PlayerDeathEvent) {
-        add(evt.entity.killer)
+        add(evt.entity.killer ?: return)
     }
 }
 

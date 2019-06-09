@@ -68,6 +68,7 @@ object RankManager {
                 syncLoad += name
             }
         }
+        -conn
         if (syncLoad.isEmpty()) {
             callback()
         } else {

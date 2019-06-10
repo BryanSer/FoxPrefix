@@ -174,10 +174,19 @@ object DataManager : Listener {
 
 data class PlayerData(
         val name: String,
-        val achievementData: MutableMap<String, Int> = HashMap(),
-        val unlockPrefix: MutableList<String> = ArrayList(),
+        var achievementData: MutableMap<String, Int> = HashMap(),
+        var unlockPrefix: MutableList<String> = ArrayList(),
         var equip: String? = null
 ) : Serializable {
+
+    fun copy():PlayerData{
+        val pd = PlayerData(name)
+        pd.achievementData = HashMap(achievementData)
+        pd.unlockPrefix = ArrayList(unlockPrefix)
+        pd.equip = equip
+        return pd
+    }
+
     companion object {
         const val serialVersionUID: Long = 0x10C9B9F9A2E0L
 

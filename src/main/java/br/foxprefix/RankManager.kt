@@ -36,23 +36,21 @@ object RankManager {
     val cacheAllPlayerData = mutableMapOf<String, PlayerData>()
     fun init() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(Main.getPlugin(), {
-            syncData()
             Bukkit.getScheduler().runTask(Main.getPlugin()) {
-                val cached = DataManager.cacheData.keys.toList()
+                val cached = mutableMapOf<String, PlayerData>()
+                for ((k, v) in DataManager.cacheData) {
+                    cached[k] = v.copy()
+                }
                 Bukkit.getScheduler().runTaskAsynchronously(Main.getPlugin()) {
-                    cacheData(cached, ::calcAchieve)
+                    cacheData(cached) { calcAchieve() }
                 }
             }
-        }, 50, 12000)
+        }, 50, 12000L * 3)
     }
 
-    fun syncData() {
-        for ((k, v) in DataManager.cacheData) {
-            DataManager.saveData(k, false)
-        }
-    }
 
-    fun cacheData(cached: List<String>, callback: () -> Unit) {
+
+    fun cacheData(cached: Map<String, PlayerData>, callback: () -> Unit) {
         cacheAllPlayerData.clear()
         val syncLoad = mutableListOf<String>()
         val conn = +DataManager.pool
@@ -60,7 +58,7 @@ object RankManager {
         val rs = ps.executeQuery()
         while (rs.next()) {
             val name = rs.getString("name")
-            if (!cached.contains(name)) {
+            if (!cached.containsKey(name)) {
                 val bytes = rs.getBytes("playerdata")
                 val data = PlayerData.deserialize(bytes)
                 cacheAllPlayerData[name] = data
@@ -72,19 +70,10 @@ object RankManager {
         if (syncLoad.isEmpty()) {
             callback()
         } else {
-            Bukkit.getScheduler().runTask(Main.getPlugin()) {
-                val data = mutableListOf<PlayerData>()
-                for (name in syncLoad) {
-                    val pd = DataManager.cacheData[name] ?: continue
-                    data += (pd.copy())
-                }
-                Bukkit.getScheduler().runTaskAsynchronously(Main.getPlugin()) {
-                    for (pd in data) {
-                        cacheAllPlayerData[pd.name] = pd
-                    }
-                    callback()
-                }
+            for (pd in cached.values) {
+                cacheAllPlayerData[pd.name] = pd
             }
+            callback()
         }
     }
 
@@ -103,6 +92,7 @@ object RankManager {
                 -(ad?.data!![a] ?: 0)
             }
             rank[a] = tsort
+            Thread.sleep(1)
         }
         for (un in PrefixIndex.values) {
             val uu = un.unlock_value

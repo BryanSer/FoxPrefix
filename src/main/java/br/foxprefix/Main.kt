@@ -41,7 +41,6 @@ open class Main : JavaPlugin() {
             return true
         }
         if (args[0].equals("delach", true) && args.size >= 3) {
-
             val p = Bukkit.getPlayerExact(args[1])
             if (p == null || !p.isOnline) {
                 sender.sendMessage("§c找不到玩家或玩家不在线")

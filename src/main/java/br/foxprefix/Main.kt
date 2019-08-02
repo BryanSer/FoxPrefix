@@ -4,6 +4,7 @@ import Br.API.GUI.Ex.UIManager
 import br.foxprefix.achievement.loadAchievement
 import br.foxprefix.prefix.Prefixs
 import br.foxprefix.prefix.loadPrefixs
+import me.clip.placeholderapi.external.EZPlaceholderHook
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -20,6 +21,20 @@ open class Main : JavaPlugin() {
         loadPrefixs()
         registerUI()
         RankManager.init()
+        object : EZPlaceholderHook(this,"foxprefix") {
+            override fun onPlaceholderRequest(p0: Player, p1: String): String {
+                when(p1){
+                    "prefix"-> {
+                        val pd = DataManager get p0.name ?: return ""
+                        if(pd.equip == null){
+                            return ""
+                        }
+                        return Prefixs[pd.equip!!]?.display ?: ""
+                    }
+                }
+                return ""
+            }
+        }.hook()
     }
 
     override fun onDisable() {

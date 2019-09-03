@@ -2,8 +2,10 @@ package br.foxprefix
 
 import Br.API.GUI.Ex.UIManager
 import br.foxprefix.achievement.loadAchievement
+import br.foxprefix.loot.LootGroup
 import br.foxprefix.prefix.Prefixs
 import br.foxprefix.prefix.loadPrefixs
+import br.foxprefix.quest.Quest
 import me.clip.placeholderapi.external.EZPlaceholderHook
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -19,8 +21,11 @@ open class Main : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(DataManager, this)
         loadAchievement()
         loadPrefixs()
+        Quest.init()
         registerUI()
+        registerQUI()
         RankManager.init()
+        LootGroup.init()
         object : EZPlaceholderHook(this,"foxprefix") {
             override fun onPlaceholderRequest(p0: Player, p1: String): String {
                 when(p1){
@@ -52,6 +57,10 @@ open class Main : JavaPlugin() {
         if (args.isEmpty() || args[0].equals("help", false)) {
             return false
         }
+        if(sender is Player && args[0].equals("q",true)){
+            UIManager.openUI(sender, "FPQUI")
+            return true
+        }
         if (!sender.isOp) {
             return true
         }
@@ -74,7 +83,10 @@ open class Main : JavaPlugin() {
         if (args[0].equals("reload", true)) {
             loadAchievement()
             loadPrefixs()
+            Quest.init()
             registerUI()
+            registerQUI()
+            LootGroup.init()
             sender.sendMessage("§6重载完成")
             return true
         }

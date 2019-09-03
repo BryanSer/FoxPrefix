@@ -35,7 +35,7 @@ example2:
         #第二页第一行第一个的Index为45
         Index: 1
         #显示在UI里的物品 锁定时
-        ItemLock: '388 1 0 Name:&7[样例称号1]&r Lore:&a点击装备|&a已锁定'
+        ItemLock: '388 1 0 Name:&7[样例称号1]&r Lore:&b$achieve-quest_1$/100|&a点击装备|&a已锁定'
         #显示在UI里的物品 解锁时
         ItemUnlock: '388 1 0 Name:&7[样例称号1]&r Lore:&a点击装备|&a已解锁'
     Unlock:

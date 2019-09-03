@@ -11,7 +11,7 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
 
 open class Prefix(config: ConfigurationSection) {
-    val name: String
+    val name: String = config.name
     val display: String
     val ui_index: Int
     val ui_lock: ItemStack
@@ -20,7 +20,6 @@ open class Prefix(config: ConfigurationSection) {
     val unlock_value: Unlock
 
     init {
-        name = config.name
         display = ChatColor.translateAlternateColorCodes('&', config.getString("Display"))
         ui_index = config.getInt("UI.Index")
         ui_lock = Utils.readItemStack(config.getString("UI.ItemLock"))

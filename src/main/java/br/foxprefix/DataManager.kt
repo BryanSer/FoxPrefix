@@ -2,6 +2,7 @@ package br.foxprefix
 
 import br.foxprefix.prefix.Prefix
 import br.foxprefix.prefix.Prefixs
+import br.foxprefix.quest.Quest
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.bukkit.Bukkit
@@ -18,19 +19,20 @@ import java.sql.Connection
 operator fun HikariDataSource.unaryPlus(): Connection = this.connection
 operator fun HikariDataSource.minus(conn: Connection): Unit = this.evictConnection(conn)
 operator fun Connection.unaryMinus() = DataManager.pool - this
+
 object DataManager : Listener {
     val cacheData: MutableMap<String, PlayerData> = HashMap()
     lateinit var pool: HikariDataSource
     infix fun get(name: String): PlayerData? = cacheData[name]
-    infix fun save(p: Player){
+    infix fun save(p: Player) {
         saveData(p.name, false)
     }
 
 
     @EventHandler
-    fun onChat(evt: AsyncPlayerChatEvent){
+    fun onChat(evt: AsyncPlayerChatEvent) {
         val pd = this get evt.player.name ?: return
-        if(pd.equip != null){
+        if (pd.equip != null) {
             val prefix = Prefixs[pd.equip!!] ?: return
             evt.format = prefix.display + evt.format
         }
@@ -49,13 +51,16 @@ object DataManager : Listener {
     }
 
     fun loadData(name: String) {
-        DataManager.selectData(name) {
+        selectData(name) {
             if (it != null) {
                 cacheData[name] = it
+                if(it.questDone == null){
+                    it.questDone = mutableSetOf()
+                }
             } else if (!cacheData.containsKey(name)) {
                 val pd = PlayerData(name)
                 cacheData[name] = pd
-                DataManager.insertData(name, pd)
+                insertData(name, pd)
             }
         }
     }
@@ -63,7 +68,7 @@ object DataManager : Listener {
     fun saveData(name: String, remove: Boolean = false) {
         val pd = cacheData[name]
         if (pd != null) {
-            DataManager.saveData(name, pd) {
+            saveData(name, pd) {
                 if (remove) {
                     cacheData -= name
                 }
@@ -179,7 +184,10 @@ data class PlayerData(
         var equip: String? = null
 ) : Serializable {
 
-    fun copy():PlayerData{
+    @Transient
+    var questDone: MutableSet<String>? = mutableSetOf()
+
+    fun copy(): PlayerData {
         val pd = PlayerData(name)
         pd.achievementData = HashMap(achievementData)
         pd.unlockPrefix = ArrayList(unlockPrefix)
@@ -194,18 +202,45 @@ data class PlayerData(
             val input = ByteArrayInputStream(byte)
             val io = ObjectInputStream(input)
             val pd = io.readObject() as PlayerData
+            try {
+                pd.questDone = io.readObject() as MutableSet<String>
+            } catch (e: Throwable) {
+            } finally {
+                if (pd.questDone == null) {
+                    pd.questDone = mutableSetOf()
+                }
+            }
             io.close()
             input.close()
             return pd
         }
     }
 
+    fun isComplete(q: Quest) :Boolean{
+        if(this.questDone == null){
+            this.questDone = mutableSetOf()
+        }
+        return this.questDone?.contains(q.name) ?: false
+    }
+
+    fun isComplete(q: String) :Boolean{
+        if(this.questDone == null){
+            this.questDone = mutableSetOf()
+        }
+        return this.questDone?.contains(q) ?: false
+    }
+
     fun isUnlocked(prefix: Prefix) = unlockPrefix.contains(prefix.name)
 
+
     fun toByte(): ByteArray {
+        if(questDone == null){
+            questDone = mutableSetOf()
+        }
         val baos = ByteArrayOutputStream(3000)
         val oo = ObjectOutputStream(baos)
         oo.writeObject(this)
+        oo.writeObject(questDone)
         oo.flush()
         val t = baos.toByteArray()
         oo.close()

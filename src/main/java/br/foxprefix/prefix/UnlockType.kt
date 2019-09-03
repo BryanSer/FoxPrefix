@@ -92,6 +92,7 @@ fun readUnlock(config: ConfigurationSection): Unlock {
     return CommandUnlock(null)
 }
 
+
 val compile = Pattern.compile("(?<pattern>%(?<name>[^%]*)%)")
 
 class VariableUnlock(value: String) : Unlock(value, UnlockType.VARIABLE) {
@@ -125,7 +126,6 @@ class VariableUnlock(value: String) : Unlock(value, UnlockType.VARIABLE) {
                 return $scr;
             }
             """.trimIndent()
-        Logger.getLogger(VariableUnlock::class.java.name).log(Level.SEVERE, "自动化脚本: $scrr")
         val t = jdk.nashorn.api.scripting.NashornScriptEngineFactory()
         script = t.getScriptEngine() as NashornScriptEngine
         script.eval(scrr)

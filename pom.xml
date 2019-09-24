@@ -6,7 +6,7 @@
 
     <groupId>br.bukkit</groupId>
     <artifactId>FoxPrefix</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <name>FoxPrefix</name>
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>br.bukkit</groupId>
             <artifactId>BrAPI</artifactId>
-            <version>Release-4.1.2</version>
+            <version>Release-4.1.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

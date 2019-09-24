@@ -20,6 +20,12 @@ task1:
         - 'money:100'
         - 'var:%quest_1% >= 10'
         - 'item:264 1 0'
+    #是否可以无限完成 注意 已完成依然会显示UI.Done的物品
+    Infty: false
+    #完成时会减少的统计项
+    Ondone:
+        #减少quest_1 10点统计
+        quest_1: 10
     #玩家完成后点击UI领取的奖励(以命令形式执行 %player%是玩家名字)
     #p:表示玩家自己执行
     #op:表示玩家以OP权限执行

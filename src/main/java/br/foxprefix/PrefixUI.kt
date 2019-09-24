@@ -43,7 +43,7 @@ fun registerQUI() {
             val ind = page * 45 + index
             val quest = Quest.quests[ind] ?: return@c
             val pd = s["Data"] as PlayerData
-            if (!pd.isComplete(quest)) {
+            if (!pd.isComplete(quest) || quest.infty) {
                 for (c in quest.conditions) {
                     if (!c.hasEnough(p)) {
                         p msg "§c§l你没有完成该任务的要求"
@@ -53,18 +53,19 @@ fun registerQUI() {
                 for (c in quest.conditions) {
                     c.remove(p)
                 }
+                for ((ac, v) in quest.onDone) {
+                    pd.achievementData[ac] = pd.achievementData[ac] ?: 0 - v
+                }
                 if (pd.questDone == null) {
                     pd.questDone = mutableSetOf()
                 }
-                if (pd.questDone?.add(quest.name) == true) {
-                    for (a in quest.award) {
-                        a.invoke(p)
-                    }
-                    p msg "§6你成功的完成了这个任务"
-                    DataManager save p
-                } else {
-                    p msg "§cERROR 任务完成发生错误"
+                pd.questDone?.add(quest.name)
+                for (a in quest.award) {
+                    a.invoke(p)
                 }
+                p msg "§6你成功的完成了这个任务"
+                DataManager save p
+
             }
         }
     }

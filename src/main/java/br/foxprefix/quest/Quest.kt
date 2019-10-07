@@ -25,9 +25,19 @@ class Quest(
     val done = Utils.readItemStack(config.getString("UI.Done"))
     val conditions = config.getStringList("Condition").map(::Condition)
     val infty = config.getBoolean("Infty", false)
-    val onDone = config.getConfigurationSection("Ondone")?.getKeys(false)?.map {
-        it!! to config.getInt("Ondone.$it")
-    }?.toList() ?: listOf()
+    val onDone = mutableListOf<Pair<String, Int>>()
+
+    init {
+        if (config.contains("Ondone")) {
+            val cs = config.getConfigurationSection("Ondone")
+            if (cs != null) {
+                for (key in cs.getKeys(false)) {
+                    onDone += key to cs.getInt(key)
+                }
+            }
+        }
+    }
+
     val award = config.getStringList("Award").map {
         val s = it.split(":".toRegex(), 2)
         when (s[0]) {

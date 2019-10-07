@@ -54,7 +54,7 @@ fun registerQUI() {
                     c.remove(p)
                 }
                 for ((ac, v) in quest.onDone) {
-                    pd.achievementData[ac] = pd.achievementData[ac] ?: 0 - v
+                    pd.achievementData[ac] = (pd.achievementData[ac] ?: 0) - v
                 }
                 if (pd.questDone == null) {
                     pd.questDone = mutableSetOf()
